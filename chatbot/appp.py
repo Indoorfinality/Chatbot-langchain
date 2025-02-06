@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 import dateparser
 import json
 
-# Add Slytherin-themed CSS
+# CSS
 st.markdown(
     """
      <style>
@@ -227,7 +227,7 @@ def reset():
 # UI Components
 st.title("GUFFADI AI")
 
-# Step 1: Show the form first
+#Show the form first
 if not st.session_state.form_submitted:
     st.subheader("Please provide your information for having guff")
     with st.form("user_info_form"):
@@ -245,9 +245,9 @@ if not st.session_state.form_submitted:
                 st.session_state.user_info = {"name": name, "phone": phone, "email": email}
                 save_user_info_locally(st.session_state.user_info)
                 st.session_state.form_submitted = True
-                st.rerun()  # Refresh the page to remove the form
+                st.rerun()  
 
-# Step 2: Start the chatbot after form submission
+#Start the chatbot after form submission
 if st.session_state.form_submitted:
     col1, col2 = st.columns([1, 1])
     with col1:

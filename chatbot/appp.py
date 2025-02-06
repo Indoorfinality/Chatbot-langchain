@@ -338,7 +338,7 @@ if st.session_state.form_submitted:
 
     # User input query
     query = st.text_input("Guff garum")
-    if st.button("GUff"):
+    if st.button("Guff"):
         response = chatbot(query)
         st.session_state.conversation_history.append({"query": query, "response": response})
         st.markdown(f"**Guffadi:** {response}")

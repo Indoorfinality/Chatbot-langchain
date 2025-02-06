@@ -7,9 +7,60 @@ import google.generativeai as genai
 from PyPDF2 import PdfReader
 from docx import Document
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 import dateparser
 import json
+
+# Add Slytherin-themed CSS
+st.markdown(
+    """
+     <style>
+    /* Main background gradient */
+    .stApp {
+        background: linear-gradient(to bottom, #000000, #1a472a);
+        color: #ffffff;  /* White text */
+        font-weight: bold;
+    }
+
+    /* Sidebar background */
+    .css-1d391kg {
+        background: linear-gradient(to bottom, #000000, #2a623d);
+    }
+
+    /* Headers */
+    h1, h2, h3, h4, h5, h6 {
+        color: #ffffff;
+        font-weight: bold;
+    }
+
+    /* Text input and text area */
+    .stTextInput input, .stTextArea textarea {
+        background: #2a623d;
+        color: #ffffff;
+        border: 1px solid #ffffff;
+        font-weight: bold;
+    }
+
+    /* Buttons */
+    .stButton button {
+        background-color: #c5d86d;  /* Yellow-Green */
+        color: #000000;
+        border-radius: 8px;
+        padding: 8px 16px;
+        font-weight: bold;
+        border: none;
+    }
+
+    /* Buttons on hover */
+    .stButton button:hover {
+        background-color: #b0c95f;
+    }
+</style>
+
+
+    """,
+    unsafe_allow_html=True
+)
 
 # Load environment variables
 load_dotenv()
@@ -106,18 +157,52 @@ def validate_phone(phone):
     pattern = r'^\+?[0-9]{7,15}$'
     return re.match(pattern, phone) is not None
 
-# Extract and validate date
+# Updated date extraction function
 def extract_and_validate_date(date_str):
     """
     Extracts and validates a date from a user's input.
     Converts the date into the format YYYY-MM-DD if possible.
     """
-    # Use `dateparser` to handle natural language dates like "next Monday"
-    date = dateparser.parse(date_str)
+    today = datetime.today()
+    date = dateparser.parse(
+        date_str,
+        settings={
+            'PREFER_DATES_FROM': 'future',
+            'RELATIVE_BASE': today
+        }
+    )
+
+    if not date:
+        date = handle_common_phrases(date_str, today)
+
     if date:
-        return date.strftime("%Y-%m-%d")  # Return formatted date
+        return date.strftime("%Y-%m-%d")
     else:
-        return None  # Return None if the date can't be parsed
+        return None
+
+def handle_common_phrases(date_str, today):
+    """
+    Handles common phrases like 'next Monday' or 'this Friday' manually if dateparser fails.
+    """
+    weekdays = [
+        "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+    ]
+    date_str = date_str.lower().strip()
+    if "next" in date_str or "this" in date_str:
+        for i, day in enumerate(weekdays):
+            if day in date_str:
+                current_weekday = today.weekday()
+                target_weekday = i
+
+                if "next" in date_str:
+                    days_ahead = (target_weekday - current_weekday + 7) % 7
+                    days_ahead = days_ahead if days_ahead != 0 else 7
+                elif "this" in date_str:
+                    days_ahead = (target_weekday - current_weekday + 7) % 7
+
+                target_date = today + timedelta(days=days_ahead)
+                return target_date
+    return None
 
 # Save user info locally
 def save_user_info_locally(user_info):
@@ -140,11 +225,11 @@ def reset():
     st.rerun()
 
 # UI Components
-st.title("Chatbot with Memory & Document Knowledge")
+st.title("GUFFADI AI")
 
 # Step 1: Show the form first
 if not st.session_state.form_submitted:
-    st.subheader("Please provide your information to start the chatbot")
+    st.subheader("Please provide your information for having guff")
     with st.form("user_info_form"):
         name = st.text_input("Enter your Name")
         phone = st.text_input("Enter your Phone Number")
@@ -176,7 +261,7 @@ if st.session_state.form_submitted:
     if st.session_state.show_appointment_form:
         st.subheader("Book an Appointment")
         with st.form("appointment_form"):
-            appointment_date = st.text_input("Enter Appointment Date (e.g., 'next Monday')")
+            appointment_date = st.text_input("Enter Appointment Date")
             appointment_phone = st.text_input("Enter Appointment Phone Number", value=st.session_state.user_info.get("phone", ""))
             appointment_email = st.text_input("Enter Appointment Email", value=st.session_state.user_info.get("email", ""))
             confirm = st.form_submit_button("Confirm Appointment")
@@ -197,7 +282,7 @@ if st.session_state.form_submitted:
                     st.rerun()
 
     # Upload document
-    uploaded_file = st.file_uploader("Upload a document for knowledge base", type=["pdf", "docx", "txt"])
+    uploaded_file = st.file_uploader("Upload a document", type=["pdf", "docx", "txt"])
     if uploaded_file:
         load_document_to_knowledge_base(uploaded_file)
 
@@ -252,11 +337,11 @@ if st.session_state.form_submitted:
             return generate_response(user_query)
 
     # User input query
-    query = st.text_input("Ask a question (General or Document-based)")
-    if st.button("Get Response"):
+    query = st.text_input("Guff garum")
+    if st.button("GUff"):
         response = chatbot(query)
         st.session_state.conversation_history.append({"query": query, "response": response})
-        st.markdown(f"**Chatbot:** {response}")
+        st.markdown(f"**Guffadi:** {response}")
 
     # Display appointment details
     if st.session_state.appointment_details:

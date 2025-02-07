@@ -159,10 +159,7 @@ def validate_phone(phone):
 
 # Updated date extraction function
 def extract_and_validate_date(date_str):
-    """
-    Extracts and validates a date from a user's input.
-    Converts the date into the format YYYY-MM-DD if possible.
-    """
+   
     today = datetime.today()
     date = dateparser.parse(
         date_str,
